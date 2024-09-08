@@ -16,6 +16,12 @@ class Severity(Enum):
   S_VALUE2 = 2
 
 
+class Status(Enum):
+  BUG = 1
+  INCIDENT = 2
+  FEATURE = 3
+
+
 class BugReport:
   id: int
   author: str
@@ -24,6 +30,7 @@ class BugReport:
   expected: str
   actual: str
   reproduction_steps: list[str]
+  status: Status
   priority: Priority
   seveirty: Severity
 
@@ -72,6 +79,7 @@ def main():
   bug_report.reproduction_steps = prompt_list('Шаги воспроизведения:')
   bug_report.priority = prompt_select('Приоритет:', Priority)
   bug_report.seveirty = prompt_select('Важность:', Severity)
+  bug_report.status = prompt_select('Статус', Status)
   write_to_xlsx_file(bug_report, df, 'bugs.xlsx')
 
 
