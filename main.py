@@ -34,7 +34,6 @@ class BugReport:
   priority: Priority
   seveirty: Severity
 
-
   def __str__(self):
     result = f"""{self.author}
 {self.creation_datetime}
@@ -171,7 +170,6 @@ def print_error(text: str, label_length: int = 0) -> None:
   print('\033[A', end='')
   print(f'\033[{label_length - 2}C', end='')
   print(f' \033[31m({text})\033[0m: ', end='')
-
 
 
 if __name__ == "__main__":
