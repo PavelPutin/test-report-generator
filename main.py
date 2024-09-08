@@ -67,12 +67,30 @@ def main():
   xlsx = config['core']['xlsx']
   output_md = config['core']['output.md']
 
-  df, next_id = init_from_xlsx()
+  df = init_from_xlsx(xlsx)
+  while True:
+    try:
+      ids = df.get('ID')
+      next_id = 1 if len(ids) == 0 else max(ids) + 1
 
-  bug_report = prompt_bug_report(next_id, author)
-  write_to_xlsx_file(bug_report, df, xlsx)
-  output_md_filename = write_to_md_file(bug_report, output_md)
-  print(f'Отчёт записан в \'{output_md_filename}\'')
+      bug_report = prompt_bug_report(next_id, author)
+      df.loc[len(df.index)] = [
+        bug_report.id,
+        bug_report.author,
+        bug_report.creation_datetime,
+        bug_report.priority.human_readable,
+        bug_report.seveirty.human_readable,
+        bug_report.status.human_readable,
+        bug_report.brief,
+        bug_report.expected,
+        bug_report.actual,
+        '\n'.join([f'{i}. {v}' for i, v in enumerate(bug_report.reproduction_steps)])
+      ]
+      output_md_filename = write_to_md_file(bug_report, output_md)
+      print(f'Отчёт записан в \'{output_md_filename}\'')
+    except KeyboardInterrupt:
+      break
+  write_to_xlsx_file(df, xlsx)
 
 
 def init_from_ini() -> configparser.ConfigParser:
@@ -100,12 +118,10 @@ def init_from_ini() -> configparser.ConfigParser:
   return config
 
 
-def init_from_xlsx() -> tuple[pd.DataFrame, int]:
-  if os.path.exists('bugs.xlsx'):
-    df = pd.read_excel('bugs.xlsx')
-    ids = df.get('ID')
-    next_id = 1 if len(ids) == 0 else max(ids) + 1
-    return df, next_id
+def init_from_xlsx(xlsx) -> pd.DataFrame:
+  if os.path.exists(xlsx):
+    df = pd.read_excel(xlsx)
+    return df
   else:
     return pd.DataFrame(columns=[
       'ID',
@@ -118,13 +134,14 @@ def init_from_xlsx() -> tuple[pd.DataFrame, int]:
       'Ожидание',
       'Реальность',
       'Шаги воспроизведения',
-    ]), 1
+    ])
 
 
 def prompt_bug_report(next_id: int, author: str) -> BugReport:
   bug_report = BugReport()
   bug_report.id = next_id
   bug_report.author = author
+  print(f'Отчёт о баге c id {bug_report.id}')
   bug_report.creation_datetime = datetime.datetime.now()
   bug_report.brief = prompt_brief()
   bug_report.expected = prompt('Ожидаемый результат:')
@@ -165,19 +182,7 @@ def generate_md_filename(bug_report: BugReport) -> str:
   return f'BR-{bug_report.id}-{bug_report.priority.value}{bug_report.seveirty.value}.md'
 
 
-def write_to_xlsx_file(bug_report: BugReport, df: pd.DataFrame, filename: str) -> None:
-  df.loc[len(df.index)] = [
-    bug_report.id,
-    bug_report.author,
-    bug_report.creation_datetime,
-    bug_report.priority.human_readable,
-    bug_report.seveirty.human_readable,
-    bug_report.status.human_readable,
-    bug_report.brief,
-    bug_report.expected,
-    bug_report.actual,
-    '\n'.join([f'{i}. {v}' for i, v in enumerate(bug_report.reproduction_steps)])
-  ]
+def write_to_xlsx_file(df: pd.DataFrame, filename: str) -> None:
   df.to_excel(filename, index=False)
 
 
