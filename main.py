@@ -51,23 +51,7 @@ class BugReport:
 
 
 def main():
-  next_id, df = init_from_xlsx()
-  next_id = 1
-  df = pd.DataFrame(columns=[
-    'ID',
-    'Автор',
-    'Дата и время нахождения',
-    'Приоритет',
-    'Важность',
-    'Краткое описание',
-    'Ожидание',
-    'Реальность',
-    'Шаги воспроизведения',
-  ])
-  if os.path.exists('bugs.xlsx'):
-    df = pd.read_excel('bugs.xlsx')
-    ids = df.get('ID')
-    next_id = 1 if len(ids) == 0 else max(ids) + 1
+  df, next_id = init_from_xlsx()
 
   bug_report = BugReport()
   bug_report.id = next_id
