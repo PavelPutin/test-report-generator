@@ -163,7 +163,7 @@ def prompt_bug_report(next_id: int, author: str) -> BugReport:
 def write_to_md_file(bug_report: BugReport, output_dir: str) -> str:
   filename = os.path.join(output_dir, generate_md_filename(bug_report))
   with open(filename, 'w') as output:
-    output.write('# Инцидент\n\n')
+    output.write(f'# Инцидент {bug_report.id}\n\n')
     output.write(f'**Приоритет:** {bug_report.priority.human_readable}\n\n')
     output.write(f'**Важность:** {bug_report.seveirty.human_readable}\n\n')
     output.write(f'**Статус:** {bug_report.status.human_readable}\n\n')
