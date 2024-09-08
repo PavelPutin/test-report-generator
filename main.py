@@ -4,6 +4,7 @@ import os
 import datetime
 import pandas as pd
 import configparser
+from markdown_pdf import MarkdownPdf, Section
 
 class HumanReadableEnum(Enum):
   def __new__(cls, *args):
@@ -45,18 +46,26 @@ class BugReport:
   seveirty: Severity
 
   def __str__(self):
-    result = f"""{self.author}
-{self.creation_datetime}
-{self.brief}
-{self.expected}
-{self.actual}
-"""
-    for i, value in enumerate(self.reproduction_steps):
-      result += f'{i + 1}. {value}\n'
-
-    result += f"""{self.priority.human_readable}
-{self.seveirty.human_readable}
-{self.status.human_readable}"""
+    result = ""
+    result += f'# Инцидент {self.id}\n\n'
+    result += f'**Приоритет:** {self.priority.human_readable}\n\n'
+    result += f'**Важность:** {self.seveirty.human_readable}\n\n'
+    result += f'**Статус:** {self.status.human_readable}\n\n'
+    result += f'**Время обнаружения**: {self.creation_datetime}\n\n'
+    result += f'**Автор:** {self.author}\n\n'
+    result += f'## Краткое описание\n\n'
+    result += f'{self.brief}\n\n'
+    result += f'## Ожидание\n\n'
+    result += f'{self.expected}\n\n'
+    result += f'## Реальность\n\n'
+    result += f'{self.actual}\n\n'
+    result += f'## Шаги воспроизведения\n\n'
+    if len(self.reproduction_steps) != 0:
+      for i, value in enumerate(self.reproduction_steps):
+        result += f'{i + 1}. {value}\n'
+      result += '\n'
+    else:
+      result += f'Шаги воспроизведения не указаны! Сообщите {self.author}\n\n'
     return result
 
 
@@ -77,27 +86,40 @@ def main():
     except KeyboardInterrupt:
       break
   write_to_xlsx_file(df, xlsx)
+  compile_to_pdf_report(output_md)
+
+
+def compile_to_pdf_report(output_md):
+  pdf = MarkdownPdf(toc_level=1)
+  for file in sorted(os.listdir()):
+    if not (os.path.isfile(file) and os.path.splitext(file)[1] == '.md' and os.path.basename(file).startswith('BR')):
+      continue
+    with open(file, 'r') as md:
+      text = md.read()
+      pdf.add_section(Section(text))
+  output_pdf_filename = os.path.join(output_md, 'all_bugs_report.pdf')
+  pdf.save(output_pdf_filename)
 
 
 def add_bug_report_to_data_frame(df, bug_report):
-    df.loc[len(df.index)] = [
-      bug_report.id,
-      bug_report.author,
-      bug_report.creation_datetime,
-      bug_report.priority.human_readable,
-      bug_report.seveirty.human_readable,
-      bug_report.status.human_readable,
-      bug_report.brief,
-      bug_report.expected,
-      bug_report.actual,
-      '\n'.join([f'{i}. {v}' for i, v in enumerate(bug_report.reproduction_steps)])
-    ]
+  df.loc[len(df.index)] = [
+    bug_report.id,
+    bug_report.author,
+    bug_report.creation_datetime,
+    bug_report.priority.human_readable,
+    bug_report.seveirty.human_readable,
+    bug_report.status.human_readable,
+    bug_report.brief,
+    bug_report.expected,
+    bug_report.actual,
+    '\n'.join([f'{i}. {v}' for i, v in enumerate(bug_report.reproduction_steps)])
+  ]
 
 
 def generate_next_id(df):
-    ids = df.get('ID')
-    next_id = 1 if len(ids) == 0 else max(ids) + 1
-    return next_id
+  ids = df.get('ID')
+  next_id = 1 if len(ids) == 0 else max(ids) + 1
+  return next_id
 
 
 def init_from_ini() -> configparser.ConfigParser:
@@ -163,26 +185,8 @@ def prompt_bug_report(next_id: int, author: str) -> BugReport:
 def write_to_md_file(bug_report: BugReport, output_dir: str) -> str:
   filename = os.path.join(output_dir, generate_md_filename(bug_report))
   with open(filename, 'w') as output:
-    output.write(f'# Инцидент {bug_report.id}\n\n')
-    output.write(f'**Приоритет:** {bug_report.priority.human_readable}\n\n')
-    output.write(f'**Важность:** {bug_report.seveirty.human_readable}\n\n')
-    output.write(f'**Статус:** {bug_report.status.human_readable}\n\n')
-    output.write(f'**Время обнаружения**: {bug_report.creation_datetime}\n\n')
-    output.write(f'**Автор:** {bug_report.author}\n\n')
-    output.write(f'## Краткое описание\n\n')
-    output.write(f'{bug_report.brief}\n\n')
-    output.write(f'## Ожидание\n\n')
-    output.write(f'{bug_report.expected}\n\n')
-    output.write(f'## Реальность\n\n')
-    output.write(f'{bug_report.actual}\n\n')
-    output.write(f'## Шаги воспроизведения\n\n')
-    if len(bug_report.reproduction_steps) != 0:
-      for i, value in enumerate(bug_report.reproduction_steps):
-        output.write(f'{i + 1}. {value}\n')
-      output.write('\n')
-    else:
-      output.write(f'Шаги воспроизведения не указаны! Сообщите {bug_report.author}\n\n')
-    return filename
+    output.write(str(bug_report))
+  return filename
 
 
 def generate_md_filename(bug_report: BugReport) -> str:
