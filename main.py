@@ -64,6 +64,9 @@ def main():
   bug_report.seveirty = prompt_select('Важность:', Severity)
   bug_report.status = prompt_select('Статус', Status)
   write_to_xlsx_file(bug_report, df, 'bugs.xlsx')
+  # md_file_name = generate_md_file_name()
+  md_file_name = f'BR-{bug_report.id}-{bug_report.priority.value}{bug_report.seveirty.value}.md'
+  write_to_md_file(bug_report, md_file_name)
 
 
 def init_from_xlsx() -> tuple[pd.DataFrame, int]:
@@ -121,7 +124,6 @@ def write_to_xlsx_file(bug_report: BugReport, df: pd.DataFrame, filename: str) -
     '\n'.join([f'{i}. {v}' for i, v in enumerate(bug_report.reproduction_steps)])
   ]
   df.to_excel(filename, index=False)
-  write_to_md_file(bug_report, f'BR_{bug_report.id}_{bug_report.priority}_{bug_report.seveirty}.md')
 
 
 def prompt(label: str, required: bool = True) -> str:
@@ -156,10 +158,10 @@ def prompt_list(label: str, ordered: bool = True) -> list[str]:
   return result
 
 
-def prompt_select(label: str, source_enum: Enum) -> str:
+def prompt_select(label: str, source_enum: Enum) -> Enum:
   values = [v.name for v in source_enum]
   print(label)
-  return values[cutie.select(values)]
+  return source_enum[values[cutie.select(values)]]
 
 
 def print_warning(text: str) -> None:
