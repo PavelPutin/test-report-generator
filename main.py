@@ -37,6 +37,8 @@ class BugReport:
   id: int
   author: str
   creation_datetime: datetime.datetime
+  section: str
+  type: str
   brief: str
   expected: str
   actual: str
@@ -51,6 +53,8 @@ class BugReport:
     result += f'**Приоритет:** {self.priority.human_readable}\n\n'
     result += f'**Важность:** {self.seveirty.human_readable}\n\n'
     result += f'**Статус:** {self.status.human_readable}\n\n'
+    result += f'**Где находится:** {self.section}\n\n'
+    result += f'**Тип:** {self.type}\n\n'
     result += f'**Время обнаружения**: {self.creation_datetime}\n\n'
     result += f'**Автор:** {self.author}\n\n'
     result += f'## Краткое описание\n\n'
@@ -109,6 +113,8 @@ def add_bug_report_to_data_frame(df, bug_report):
     bug_report.priority.human_readable,
     bug_report.seveirty.human_readable,
     bug_report.status.human_readable,
+    bug_report.section,
+    bug_report.type,
     bug_report.brief,
     bug_report.expected,
     bug_report.actual,
@@ -159,6 +165,8 @@ def init_from_xlsx(xlsx) -> pd.DataFrame:
       'Приоритет',
       'Важность',
       'Статус',
+      'Местонахождение',
+      'Тип',
       'Краткое описание',
       'Ожидание',
       'Реальность',
@@ -173,6 +181,8 @@ def prompt_bug_report(next_id: int, author: str) -> BugReport:
   print(f'Отчёт о баге c id {bug_report.id}')
   bug_report.creation_datetime = datetime.datetime.now()
   bug_report.brief = prompt_brief()
+  bug_report.section = prompt('Местонахождение инцидента:')
+  bug_report.type = prompt('Тип инцидента:')
   bug_report.expected = prompt('Ожидаемый результат:')
   bug_report.actual = prompt('Реальный результат:')
   bug_report.reproduction_steps = prompt_list('Шаги воспроизведения:')
