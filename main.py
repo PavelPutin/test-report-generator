@@ -64,9 +64,7 @@ def main():
   bug_report.seveirty = prompt_select('Важность:', Severity)
   bug_report.status = prompt_select('Статус', Status)
   write_to_xlsx_file(bug_report, df, 'bugs.xlsx')
-  # md_file_name = generate_md_file_name()
-  md_file_name = f'BR-{bug_report.id}-{bug_report.priority.value}{bug_report.seveirty.value}.md'
-  write_to_md_file(bug_report, md_file_name)
+  write_to_md_file(bug_report)
 
 
 def init_from_xlsx() -> tuple[pd.DataFrame, int]:
@@ -89,7 +87,8 @@ def init_from_xlsx() -> tuple[pd.DataFrame, int]:
     ]), 1
 
 
-def write_to_md_file(bug_report: BugReport, filename: str) -> None:
+def write_to_md_file(bug_report: BugReport) -> None:
+  filename = generate_md_filename(bug_report)
   with open(filename, 'w') as output:
     output.write('# Инцидент\n\n')
     output.write(f'**Приоритет:** {bug_report.priority}\n\n')
@@ -109,6 +108,10 @@ def write_to_md_file(bug_report: BugReport, filename: str) -> None:
       output.write('\n')
     else:
       output.write(f'Шаги воспроизведения не указаны! Сообщите {bug_report.author}\n\n')
+
+
+def generate_md_filename(bug_report: BugReport) -> str:
+  return f'BR-{bug_report.id}-{bug_report.priority.value}{bug_report.seveirty.value}.md'
 
 
 def write_to_xlsx_file(bug_report: BugReport, df: pd.DataFrame, filename: str) -> None:
