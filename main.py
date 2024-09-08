@@ -1,4 +1,3 @@
-import click
 import cutie
 from enum import Enum
 import os
@@ -70,27 +69,35 @@ def main():
   df = init_from_xlsx(xlsx)
   while True:
     try:
-      ids = df.get('ID')
-      next_id = 1 if len(ids) == 0 else max(ids) + 1
-
+      next_id = generate_next_id(df)
       bug_report = prompt_bug_report(next_id, author)
-      df.loc[len(df.index)] = [
-        bug_report.id,
-        bug_report.author,
-        bug_report.creation_datetime,
-        bug_report.priority.human_readable,
-        bug_report.seveirty.human_readable,
-        bug_report.status.human_readable,
-        bug_report.brief,
-        bug_report.expected,
-        bug_report.actual,
-        '\n'.join([f'{i}. {v}' for i, v in enumerate(bug_report.reproduction_steps)])
-      ]
+      add_bug_report_to_data_frame(df, bug_report)
       output_md_filename = write_to_md_file(bug_report, output_md)
       print(f'Отчёт записан в \'{output_md_filename}\'')
     except KeyboardInterrupt:
       break
   write_to_xlsx_file(df, xlsx)
+
+
+def add_bug_report_to_data_frame(df, bug_report):
+    df.loc[len(df.index)] = [
+      bug_report.id,
+      bug_report.author,
+      bug_report.creation_datetime,
+      bug_report.priority.human_readable,
+      bug_report.seveirty.human_readable,
+      bug_report.status.human_readable,
+      bug_report.brief,
+      bug_report.expected,
+      bug_report.actual,
+      '\n'.join([f'{i}. {v}' for i, v in enumerate(bug_report.reproduction_steps)])
+    ]
+
+
+def generate_next_id(df):
+    ids = df.get('ID')
+    next_id = 1 if len(ids) == 0 else max(ids) + 1
+    return next_id
 
 
 def init_from_ini() -> configparser.ConfigParser:
