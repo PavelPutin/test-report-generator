@@ -54,7 +54,7 @@ class BugReport:
 
   def __str__(self):
     result = ""
-    result += f'# Инцидент {self.id}\n\n'
+    result += f'# Инцидент {self.id}: {self.brief}\n\n'
     result += f'**Приоритет:** {self.priority.human_readable}\n\n'
     result += f'**Важность:** {self.seveirty.human_readable}\n\n'
     result += f'**Статус:** {self.status.human_readable}\n\n'
@@ -62,8 +62,7 @@ class BugReport:
     result += f'**Тип:** {self.type}\n\n'
     result += f'**Время обнаружения**: {self.creation_datetime}\n\n'
     result += f'**Автор:** {self.author}\n\n'
-    result += f'## Краткое описание\n\n'
-    result += f'{self.brief}\n\n'
+    result += '-' * 20 + '\n\n'
     result += f'## Ожидание\n\n'
     result += f'{self.expected}\n\n'
     result += f'## Реальность\n\n'
