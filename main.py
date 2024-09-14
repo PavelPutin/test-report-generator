@@ -84,10 +84,14 @@ def main():
   output_md = config['core']['output.md']
 
   df = init_from_xlsx(xlsx)
+  locations = set(df['Местонахождение'])
+  types = set(df['Тип'])
   while True:
     try:
       next_id = generate_next_id(df)
-      bug_report = prompt_bug_report(next_id, author)
+      bug_report = prompt_bug_report(next_id, author, locations, types)
+      locations.add(bug_report.section)
+      types.add(bug_report.type)
       add_bug_report_to_data_frame(df, bug_report)
       output_md_filename = write_to_md_file(bug_report, output_md)
       print(f'Отчёт записан в \'{output_md_filename}\'')
@@ -178,15 +182,15 @@ def init_from_xlsx(xlsx) -> pd.DataFrame:
     ])
 
 
-def prompt_bug_report(next_id: int, author: str) -> BugReport:
+def prompt_bug_report(next_id: int, author: str, locations: set[str], types: set[str]) -> BugReport:
   bug_report = BugReport()
   bug_report.id = next_id
   bug_report.author = author
   print(f'Отчёт о баге c id {bug_report.id}')
   bug_report.creation_datetime = datetime.datetime.now()
   bug_report.brief = prompt_brief()
-  bug_report.section = prompt('Местонахождение инцидента:')
-  bug_report.type = prompt('Тип инцидента:')
+  bug_report.section = prompt_with_old_variants('Местонахождение инцидента:', locations)
+  bug_report.type = prompt_with_old_variants('Тип инцидента:', types)
   bug_report.expected = prompt('Ожидаемый результат:')
   bug_report.actual = prompt('Реальный результат:')
   bug_report.reproduction_steps = prompt_list('Шаги воспроизведения:')
@@ -253,6 +257,20 @@ def prompt_select(label: str, source_enum: HumanReadableEnum) -> Enum:
   values = [v.human_readable for v in source_enum]
   print(label)
   return t[cutie.select(values)]
+
+
+def prompt_with_old_variants(label: str, old_variants: set[str]) -> str:
+  if len(old_variants) == 0:
+    return prompt(label)
+  t = [v for v in old_variants]
+  t.sort()
+  t.insert(0, '>> Другое')
+  print(label)
+  selected = cutie.select(t)
+  if selected == 0:
+    value = prompt('Введите свой вариант')
+    return value
+  return t[selected]
 
 
 def print_warning(text: str) -> None:
