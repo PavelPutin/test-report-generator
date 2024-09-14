@@ -103,7 +103,8 @@ def main():
 
 def compile_to_pdf_report(output_md):
   pdf = MarkdownPdf(toc_level=1)
-  for file in sorted(os.listdir()):
+  for file in sorted(os.listdir(output_md)):
+    file = os.path.join(output_md, file)
     if not (os.path.isfile(file) and os.path.splitext(file)[1] == '.md' and os.path.basename(file).startswith('BR')):
       continue
     with open(file, 'r') as md:
