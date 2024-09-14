@@ -18,13 +18,18 @@ class HumanReadableEnum(Enum):
 
 
 class Priority(HumanReadableEnum):
-  P_VALUE1 = 'Приоритет 1'
-  P_VALUE2 = 'Приоритет 2'
+  IMMEDIATELY = 'Исправить немедленно'
+  AS_SOON_AS_POSSIBLE = 'Исправить как можно быстрее'
+  FIX_FOR_RELEASE = 'Исправить к релизу'
+  FIX_WHEN_HAVE_TIME = 'Исправить, если будет время'
 
   
 class Severity(HumanReadableEnum):
-  S_VALUE1 = 'Важность 1'
-  S_VALUE2 = 'Важность 2'
+  BLOCKING = 'Блокирующий'
+  CRITICAL = 'Критический'
+  IMPORTANT = 'Важный'
+  ORDINARY = 'Обычный'
+  TRIVIAL = 'Тривиальный'
 
 
 class Status(HumanReadableEnum):
