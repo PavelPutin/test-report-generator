@@ -103,7 +103,10 @@ def main():
 
 def compile_to_pdf_report(output_md):
   pdf = MarkdownPdf(toc_level=1)
-  for file in sorted(os.listdir(output_md)):
+  files = os.listdir(output_md)
+  files = filter(is_valid_bug_report_file_name, files)
+  files = sorted(files, key=get_id_from_file_name)
+  for file in files:
     file = os.path.join(output_md, file)
     if not (os.path.isfile(file) and os.path.splitext(file)[1] == '.md' and os.path.basename(file).startswith('BR')):
       continue
@@ -112,6 +115,18 @@ def compile_to_pdf_report(output_md):
       pdf.add_section(Section(text))
   output_pdf_filename = os.path.join(output_md, 'all_bugs_report.pdf')
   pdf.save(output_pdf_filename)
+
+
+def is_valid_bug_report_file_name(file_name: str) -> bool:
+  return not (os.path.isfile(file_name) and os.path.splitext(file_name)[1] == '.md' and os.path.basename(file_name).startswith('BR')) 
+
+
+def get_id_from_file_name(file_name: str) -> int:
+  start, end = file_name.find('-'), file_name.rfind('-')
+  maybe_id = file_name[start + 1:end]
+  if maybe_id.isnumeric():
+    return int(maybe_id)
+  return 0
 
 
 def add_bug_report_to_data_frame(df, bug_report):
